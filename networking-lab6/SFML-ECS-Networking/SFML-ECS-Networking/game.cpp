@@ -71,6 +71,9 @@ void Game::Update(float dt)
 void Game::NetworkUpdate(float dt, TankMessage data) {
 	// Force position updates from network data.
 	tanks.at(data.id)->position = data.position;
+	tanks.at(data.id)->bodyRotation = sf::radians(data.rotation.x);
+	tanks.at(data.id)->barrelRotation = sf::radians(data.rotation.y);
+
 	// Update tank with new position.
 	// NOTE: This assumets no inputs were detected and so the tank will only move according to 
 	// network updates. This is not ideal and prone to unexpected behaviour if game is extended
@@ -98,5 +101,5 @@ TankMessage Game::GetNetworkUpdate()
 	// This is hardcoded for the local tan for Player.
 	// First value can be anything as we don't care about player ID for local Player updates.
 	// For time use -1.f as a way of checking for errors later. The time can never be negative.
-	return {-1.f, 0, tanks.at(0)->position};
+	return { -1.f, 0, tanks.at(0)->position, sf::Vector2f(tanks.at(0)->bodyRotation.asRadians(), tanks.at(0)->barrelRotation.asRadians()) };
 }

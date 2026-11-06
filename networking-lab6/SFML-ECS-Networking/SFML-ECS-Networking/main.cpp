@@ -7,7 +7,7 @@
 #include "connection.h"
 
 /* Uncomment to enable debug messages. */
-//#define DEBUG
+#define DEBUG
 
 /*
  This is a modified version of Lab 5 game, which now includes message history for each connection and
@@ -186,7 +186,7 @@ int main() {
 						// Read recieved data into TankMessage struct.
 						// FIXME: reading from packet can fail. Refer to documentation on how to
 						// handle errors and add error checking here.
-						packet >> message.time >> message.position.x >> message.position.y;
+						packet >> message.time >> message.position.x >> message.position.y >> message.rotation.x >> message.rotation.y;
 
 						player_connections[i].inter_t = 0.f; // reset interpolation t value when we get a new message
 
@@ -229,14 +229,23 @@ int main() {
 #ifdef DEBUG
 					Utils::printMsg("dt = " + std::to_string(dt) + ", Inter t = " + std::to_string(player_connections[i].inter_t), MessageType::info);
 #endif // DEBUG
-					// Get actual position based on interpolation method.
-					sf::Vector2f interpolated_pos = player_connections[i].Interpolate(dt);
 
+					
+					// Get actual position based on interpolation method.
+
+
+					sf::Vector2f PredPos = player_connections[i].PredictPos(game_time, PredictionMethod::Linear);
+
+					player_connections[i].UpdateInterp(dt);
+
+					//sf::Vector2f interpolated_pos = player_connections[i].InterpPos(PredictionMethod::Linear, PredPos);
+					sf::Vector2f interpolated_rot = player_connections[i].InterpRot(PredictionMethod::Linear);
 					// Construct message with actual positon.
 					TankMessage interpolated_msg = {
 						game_time,
 						player_connections[i].message_history[0].id,
-						interpolated_pos
+						PredPos,
+						interpolated_rot
 					};
 					// Update game using message containign actual position update.
 					game.NetworkUpdate(dt, interpolated_msg);
@@ -271,7 +280,7 @@ int main() {
 				// Add current game time to the message
 				message.time = game_time;
 				// Translate our messgage struct to sf::Packet (very rudimentary conversion).
-				packet << message.time << message.position.x << message.position.y;
+				packet << message.time << message.position.x << message.position.y << message.rotation.x << message.rotation.y;
 
 				// Send messages only as often as the send rate allows.
 				if (send_timer >= send_rate) {
