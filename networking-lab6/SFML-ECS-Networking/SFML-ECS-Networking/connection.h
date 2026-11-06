@@ -90,17 +90,52 @@ struct Connection
 
 	auto PredictPos(float GameTime, PredictionMethod Method) -> const sf::Vector2f //Lets try this trailing types thing?
 	{
+		//Is this me thinking of an excuse to use the spaceship operator? Yes.
+		const auto res = message_history.size() <=> 1;
+		if (res < 1) return sf::Vector2f();
+		if (res == 1) return message_history[0].position;
+		//Final case we continue this way...
+
+		//Else depending on our input method, predict!
+		switch (Method)
+		{
+		case PredictionMethod::Linear:
+			return PredictPos_Linear(GameTime, &message_history);
+			break;
+		case PredictionMethod::Quadratic:
+			return PredictPos_Quadratic(GameTime, &message_history);
+		default:
+			return message_history[0].position;
+		}
+	}
+
+private:
+
+	//Linearly predict the position by constructing the equation for a linear equation of y = mx + c
+	static auto PredictPos_Linear(float GameTime, std::deque<TankMessage>* MessageHistory) -> const sf::Vector2f
+	{
+		//As to get to this point we will have confirmed we have atleast 2 messages in message_history, no need to do a safety check here
+
 		//y = mx + c, construct linear equation where y is the position and x is the time
-		if (message_history.size() <= 1)
-			return sf::Vector2f();
-
-
-		const sf::Vector2f M = (message_history[0].position - message_history[1].position) / (message_history[0].time - message_history[1].time);
-		const sf::Vector2f C = (message_history[0].position - M * message_history[0].time);
+		const sf::Vector2f M = (MessageHistory->at(0).position - MessageHistory->at(1).position) / (MessageHistory->at(0).time - MessageHistory->at(1).time);
+		const sf::Vector2f C = (MessageHistory->at(0).position - M * MessageHistory->at(0).time);
 		//Now we've constructed our equation for a line, is it as simple as putting us where we'd be in the exact same step again?
 
 		return M * GameTime + C;
 	}
 
 
+	static auto PredictPos_Quadratic(float GameTime, std::deque<TankMessage>* MessageHistory) -> const sf::Vector2f
+	{
+		//y = ax^2 + bx + c, we need 3 messages in our history
+
+
+
+	}
+
+
+	static auto PredictPos_Cubic(float GameTime, std::deque<TankMessage>* MessageHistory) -> const sf::Vector2f
+	{
+
+	}
 };

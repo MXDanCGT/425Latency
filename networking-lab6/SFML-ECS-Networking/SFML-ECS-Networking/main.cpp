@@ -152,7 +152,6 @@ int main() {
 				//		  that time.
 				if(player_connections.size() == 1)
 					game_time = 0.f; 
-
 			}
 
 			// Reset states before waiting to avoid stale Ready state causing a blocking receive.

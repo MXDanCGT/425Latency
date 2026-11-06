@@ -47,6 +47,7 @@ void Game::HandleEvents(const std::optional<sf::Event> event)
 		}
 	}
 
+
 	// Handle key release events passed from window.
 	else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
 		if (keyReleased->scancode == sf::Keyboard::Scancode::W)
